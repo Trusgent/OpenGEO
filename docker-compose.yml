@@ -1,0 +1,14 @@
+services:
+  opengeo:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      DATABASE_PATH: /data/opengeo.db
+      VISIBILITY_PROVIDER: demo
+      API_KEY: dev-opengeo-key
+    volumes:
+      - opengeo-data:/data
+
+volumes:
+  opengeo-data:
