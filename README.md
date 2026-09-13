@@ -21,6 +21,8 @@ after you ship.
 
 ## Quick start
 
+Requires **Node 22** (see `.nvmrc`). Node 24 may fail to install native SQLite bindings without local C++ build tools.
+
 ```bash
 pnpm install
 cp .env.example .env
@@ -85,6 +87,8 @@ Example MCP client config:
 | `generate_geo_brief` | Action Brief |
 | `generate_citable_blocks` | Publishable blocks |
 | `run_recheck` / `get_recheck_diff` | Post-publish proof |
+| `export_visibility_report` | Markdown / JSON export |
+| `audit_geo_readiness` | Public readiness checks |
 
 ## Agent Skills
 

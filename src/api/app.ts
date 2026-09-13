@@ -258,6 +258,38 @@ export function createApi(services: AppServices) {
     },
   );
 
+  app.get(
+    "/api/projects/:projectId/export",
+    requireApiKey(apiKey),
+    (c) => {
+      const format = (c.req.query("format") ?? "markdown").toLowerCase();
+      const projectId = c.req.param("projectId");
+      if (format === "json") {
+        return c.json(services.exports.json(projectId));
+      }
+      const markdown = services.exports.markdown(projectId);
+      return c.text(markdown, 200, {
+        "content-type": "text/markdown; charset=utf-8",
+        "content-disposition": `attachment; filename="opengeo-${projectId}.md"`,
+      });
+    },
+  );
+
+  app.post(
+    "/api/projects/:projectId/readiness",
+    requireApiKey(apiKey),
+    async (c) => {
+      const body = (await c.req.json().catch(() => ({}))) as {
+        baseUrl?: string;
+      };
+      const report = await services.readiness.audit(
+        c.req.param("projectId"),
+        body.baseUrl,
+      );
+      return c.json({ report });
+    },
+  );
+
   app.onError((err, c) => {
     if (err instanceof HTTPException) {
       return err.getResponse();

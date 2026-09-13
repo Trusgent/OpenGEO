@@ -2,7 +2,7 @@
 
 ## Local Node
 
-1. Install Node 20+
+1. Install **Node 22** (recommended; matches `.nvmrc` and Docker)
 2. `pnpm install`
 3. `cp .env.example .env`
 4. `pnpm db:seed`

@@ -317,6 +317,48 @@ export function App() {
             >
               Re-check
             </button>
+            <button
+              className="secondary"
+              disabled={busy || !projectId}
+              onClick={() =>
+                run("Exporting markdown report…", async () => {
+                  const response = await fetch(
+                    `/api/projects/${projectId}/export?format=markdown`,
+                    {
+                      headers: { authorization: `Bearer ${API_KEY}` },
+                    },
+                  );
+                  if (!response.ok) {
+                    throw new Error("Export failed");
+                  }
+                  const markdown = await response.text();
+                  await navigator.clipboard.writeText(markdown);
+                  setStatus("Report copied to clipboard.");
+                })
+              }
+            >
+              Export report
+            </button>
+            <button
+              className="secondary"
+              disabled={busy || !projectId || !selected}
+              onClick={() =>
+                run("Auditing GEO readiness…", async () => {
+                  const data = await api<{
+                    report: { score: number; checks: Array<{ id: string; ok: boolean }> };
+                  }>(`/api/projects/${projectId}/readiness`, {
+                    method: "POST",
+                    body: "{}",
+                  });
+                  const passed = data.report.checks.filter((c) => c.ok).length;
+                  setStatus(
+                    `Readiness ${(data.report.score * 100).toFixed(0)}% — ${passed}/${data.report.checks.length} checks passed`,
+                  );
+                })
+              }
+            >
+              Readiness
+            </button>
           </div>
         </section>
       </div>

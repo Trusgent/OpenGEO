@@ -267,5 +267,38 @@ export function createMcpServer(services: AppServices) {
       text(services.rechecks.diff(project_id, before_id, after_id)),
   );
 
+  server.tool(
+    "export_visibility_report",
+    "Export a Markdown or JSON visibility report for a project",
+    {
+      project_id: z.string(),
+      format: z.enum(["markdown", "json"]).optional(),
+    },
+    async ({ project_id, format }) => {
+      if ((format ?? "markdown") === "json") {
+        return text(services.exports.json(project_id));
+      }
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: services.exports.markdown(project_id),
+          },
+        ],
+      };
+    },
+  );
+
+  server.tool(
+    "audit_geo_readiness",
+    "Check public GEO readiness signals (homepage, robots, llms.txt, sitemap)",
+    {
+      project_id: z.string(),
+      base_url: z.string().url().optional(),
+    },
+    async ({ project_id, base_url }) =>
+      text({ report: await services.readiness.audit(project_id, base_url) }),
+  );
+
   return server;
 }
