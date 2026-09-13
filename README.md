@@ -45,11 +45,13 @@ docker compose up --build
 
 1. Create a project (brand, domain, competitors)
 2. Seed / curate prompts
-3. Run visibility across engines
-4. Inspect citation gaps + share of voice
-5. Generate an Action Brief
-6. Generate Citable Blocks and publish them on your site
-7. Re-check the same prompts and read the diff
+3. (Optional) Audit public GEO readiness (`llms.txt`, robots, sitemap)
+4. Run visibility across engines
+5. Inspect citation gaps + share of voice
+6. Generate an Action Brief
+7. Generate Citable Blocks and publish them on your site
+8. Re-check the same prompts and read the diff
+9. Export a Markdown / JSON report
 
 ## MCP
 
@@ -96,6 +98,7 @@ Install skills into your agent skills directory from `.agents/skills/`:
 
 - `/geo-project-setup`
 - `/prompt-research`
+- `/geo-readiness`
 - `/visibility-check`
 - `/citation-gap`
 - `/geo-brief`

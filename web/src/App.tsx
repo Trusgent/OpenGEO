@@ -22,6 +22,12 @@ type Brief = {
   actions: Array<{ id: string; priority: number; why: string; what: string; target: string }>;
 };
 type Block = { id: string; title: string; format: string; markdown: string };
+type ReadinessReport = {
+  score: number;
+  domain: string;
+  checkedAt: string;
+  checks: Array<{ id: string; ok: boolean; detail: string }>;
+};
 
 const API_KEY = "dev-opengeo-key";
 
@@ -53,6 +59,7 @@ export function App() {
   const [gaps, setGaps] = useState<Array<{ url: string; domain: string; count: number }>>([]);
   const [brief, setBrief] = useState<Brief | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [readiness, setReadiness] = useState<ReadinessReport | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -344,12 +351,14 @@ export function App() {
               disabled={busy || !projectId || !selected}
               onClick={() =>
                 run("Auditing GEO readiness…", async () => {
-                  const data = await api<{
-                    report: { score: number; checks: Array<{ id: string; ok: boolean }> };
-                  }>(`/api/projects/${projectId}/readiness`, {
-                    method: "POST",
-                    body: "{}",
-                  });
+                  const data = await api<{ report: ReadinessReport }>(
+                    `/api/projects/${projectId}/readiness`,
+                    {
+                      method: "POST",
+                      body: "{}",
+                    },
+                  );
+                  setReadiness(data.report);
                   const passed = data.report.checks.filter((c) => c.ok).length;
                   setStatus(
                     `Readiness ${(data.report.score * 100).toFixed(0)}% — ${passed}/${data.report.checks.length} checks passed`,
@@ -382,8 +391,38 @@ export function App() {
           </div>
         </section>
 
+        <section className="panel">
+          <h2>GEO readiness</h2>
+          <div className="list">
+            {!readiness ? (
+              <p className="muted">
+                Run readiness to check homepage, robots.txt, llms.txt, and sitemap.
+              </p>
+            ) : (
+              <>
+                <div className="item">
+                  <h3>
+                    {readiness.domain} · {(readiness.score * 100).toFixed(0)}%
+                  </h3>
+                  <p>Checked {new Date(readiness.checkedAt).toLocaleString()}</p>
+                </div>
+                {readiness.checks.map((check) => (
+                  <div className="item" key={check.id}>
+                    <h3>
+                      {check.ok ? "✓" : "✗"} {check.id}
+                    </h3>
+                    <p>{check.detail}</p>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <div className="grid two" style={{ marginTop: "1rem" }}>
         <section className="panel stack">
-          <h2>Action Brief + Citable Blocks</h2>
+          <h2>Action Brief</h2>
           <div className="row">
             <button
               disabled={busy || !projectId || !snapshot}
@@ -434,25 +473,25 @@ export function App() {
             <p className="muted">No brief yet.</p>
           )}
         </section>
-      </div>
 
-      <section className="panel" style={{ marginTop: "1rem" }}>
-        <h2>Citable blocks</h2>
-        <div className="list">
-          {blocks.length === 0 ? (
-            <p className="muted">Generate blocks to copy markdown onto your site.</p>
-          ) : (
-            blocks.slice(0, 4).map((block) => (
-              <div className="item" key={block.id}>
-                <h3>
-                  {block.title} · {block.format}
-                </h3>
-                <pre>{block.markdown}</pre>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+        <section className="panel">
+          <h2>Citable blocks</h2>
+          <div className="list">
+            {blocks.length === 0 ? (
+              <p className="muted">Generate blocks to copy markdown onto your site.</p>
+            ) : (
+              blocks.slice(0, 4).map((block) => (
+                <div className="item" key={block.id}>
+                  <h3>
+                    {block.title} · {block.format}
+                  </h3>
+                  <pre>{block.markdown}</pre>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
